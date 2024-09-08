@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Kacu.Shared.Abstraction.Messaging;
 
-namespace Kacu.Shared.Abstraction.Events
+namespace Kacu.Shared.Abstraction.Messaging
 {
-    public interface IEvent : IMessage
+    public interface IMessageBroker
     {
+        Task PublishAsync(params IMessage[] messages);
     }
 }
