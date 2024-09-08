@@ -5,16 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Kacu.Shared.Abstraction.Messaging;
 using Kacu.Shared.Abstraction.Modules;
+using Kacu.Shared.Infrastructure.Messaging.Dispatchers;
 
 namespace Kacu.Shared.Infrastructure.Messaging
 {
     internal class MessageBroker : IMessageBroker
     {
         private readonly IModuleClient _moduleClient;
-
-        public MessageBroker(IModuleClient moduleClient)
+        private readonly MessagingOptions _messagingOptions;
+        private readonly IAsyncMessageDispatcher _asyncMessageDispatcher;
+        
+        public MessageBroker(IModuleClient moduleClient, MessagingOptions messagingOptions, IAsyncMessageDispatcher asyncMessageDispatcher)
         {
             _moduleClient = moduleClient;
+            _messagingOptions = messagingOptions;
+            _asyncMessageDispatcher = asyncMessageDispatcher;
         }
 
         public async Task PublishAsync(params IMessage[] messages)
@@ -28,6 +33,11 @@ namespace Kacu.Shared.Infrastructure.Messaging
 
             foreach (var message in messages)
             {
+                if (_messagingOptions.UseBackgroundDispatcher)
+                {
+                    await _asyncMessageDispatcher.PublishAsync(message);
+                    continue;
+                }
                 tasks.Add(_moduleClient.PublishAsync(message));
             }
 
